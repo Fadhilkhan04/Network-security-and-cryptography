@@ -1,190 +1,154 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <string>
 using namespace std;
-#define SIZE 30
-
-// Function to convert the string to lowercase
-void toLowerCase(char plain[], int ps)
+class playfair
 {
-  int i;
-  for (i = 0; i < ps; i++)
+public:
+  string msg;
+  char n[5][5];
+  void play(string k, string t, bool m, bool e)
   {
-    if (plain[i] > 64 && plain[i] < 91)
-      plain[i] += 32;
-  }
-}
-
-// Function to remove all spaces in a string
-int removeSpaces(char *plain, int ps)
-{
-  int i, count = 0;
-  for (i = 0; i < ps; i++)
-    if (plain[i] != ' ')
-      plain[count++] = plain[i];
-  plain[count] = '\0';
-  return count;
-}
-
-// Function to generate the 5x5 key square
-void generateKeyTable(char key[], int ks, char keyT[5][5])
-{
-  int i, j, k, flag = 0;
-
-  // a 26 character hashmap
-  // to store count of the alphabet
-  int dicty[26] = {0};
-  for (i = 0; i < ks; i++)
-  {
-    if (key[i] != 'j')
-      dicty[key[i] - 97] = 2;
-  }
-
-  dicty['j' - 97] = 1;
-
-  i = 0;
-  j = 0;
-
-  for (k = 0; k < ks; k++)
-  {
-    if (dicty[key[k] - 97] == 2)
-    {
-      dicty[key[k] - 97] -= 1;
-      keyT[i][j] = key[k];
-      j++;
-      if (j == 5)
-      {
-        i++;
-        j = 0;
-      }
-    }
-  }
-
-  for (k = 0; k < 26; k++)
-  {
-    if (dicty[k] == 0)
-    {
-      keyT[i][j] = (char)(k + 97);
-      j++;
-      if (j == 5)
-      {
-        i++;
-        j = 0;
-      }
-    }
-  }
-}
-
-// Function to search for the characters of a digraph
-// in the key square and return their position
-void search(char keyT[5][5], char a, char b, int arr[])
-{
-  int i, j;
-
-  if (a == 'j')
-    a = 'i';
-  else if (b == 'j')
-    b = 'i';
-
-  for (i = 0; i < 5; i++)
-  {
-
-    for (j = 0; j < 5; j++)
-    {
-
-      if (keyT[i][j] == a)
-      {
-        arr[0] = i;
-        arr[1] = j;
-      }
-      else if (keyT[i][j] == b)
-      {
-        arr[2] = i;
-        arr[3] = j;
-      }
-    }
-  }
-}
-
-// Function to find the modulus with 5
-int mod5(int a) { return (a % 5); }
-
-// Function to make the plain text length to be even
-int prepare(char str[], int ptrs)
-{
-  if (ptrs % 2 != 0)
-  {
-    str[ptrs++] = 'z';
-    str[ptrs] = '\0';
-  }
-  return ptrs;
-}
-
-// Function for performing the encryption
-void encrypt(char str[], char keyT[5][5], int ps)
-{
-  int i, a[4];
-
-  for (i = 0; i < ps; i += 2)
-  {
-
-    search(keyT, str[i], str[i + 1], a);
-
-    if (a[0] == a[2])
-    {
-      str[i] = keyT[a[0]][mod5(a[1] + 1)];
-      str[i + 1] = keyT[a[0]][mod5(a[3] + 1)];
-    }
-    else if (a[1] == a[3])
-    {
-      str[i] = keyT[mod5(a[0] + 1)][a[1]];
-      str[i + 1] = keyT[mod5(a[2] + 1)][a[1]];
-    }
+    createEncoder(k, m);
+    getText(t, m, e);
+    if (e)
+      play(1);
     else
-    {
-      str[i] = keyT[a[0]][a[3]];
-      str[i + 1] = keyT[a[2]][a[1]];
-    }
+      play(-1);
+    print();
   }
-}
 
-// Function to encrypt using Playfair Cipher
-void encryptByPlayfairCipher(char str[], char key[])
+private:
+  void play(int dir)
+  {
+    int j, k, p, q;
+    string nmsg;
+    for (string::const_iterator it = msg.begin(); it != msg.end(); it++)
+    {
+      if (getPos(*it++, j, k))
+        if (getPos(*it, p, q))
+        {
+          // for same row
+          if (j == p)
+          {
+            nmsg += getChar(j, k + dir);
+            nmsg += getChar(p, q + dir);
+          }
+          // for same column
+          else if (k == q)
+          {
+            nmsg += getChar(j + dir, k);
+            nmsg += getChar(p + dir, q);
+          }
+          else
+          {
+            nmsg += getChar(p, k);
+            nmsg += getChar(j, q);
+          }
+        }
+    }
+    msg = nmsg;
+  }
+  void print() // print the solution
+  {
+    cout << "\n\n Solution:" << endl;
+    string::iterator it = msg.begin();
+    int count = 0;
+    while (it != msg.end())
+    {
+      cout << *it;
+      it++;
+      cout << *it << " ";
+      it++;
+      if (++count >= 26)
+        cout << endl;
+      count = 0;
+    }
+    cout << endl
+         << endl;
+  }
+  char getChar(int a, int b)
+  { // get the characters
+    return n[(b + 5) % 5][(a + 5) % 5];
+  }
+  bool getPos(char l, int &c, int &d)
+  { // get the position
+    for (int y = 0; y < 5; y++)
+      for (int x = 0; x < 5; x++)
+        if (n[y][x] == l)
+        {
+          c = x;
+          d = y;
+          return true;
+        }
+    return false;
+  }
+  void getText(string t, bool m, bool e)
+  { // get the original message
+    for (string::iterator it = t.begin(); it != t.end(); it++)
+    {
+      // to choose J = I or no Q in the alphabet.
+      *it = toupper(*it);
+      if (*it < 65 || *it > 90)
+        continue;
+      if (*it == 'J' && m)
+        *it = 'I';
+      else if (*it == 'Q' && !m)
+        continue;
+      msg += *it;
+    }
+    if (e)
+    {
+      string nmsg = "";
+      size_t len = msg.length();
+      for (size_t x = 0; x < len; x += 2)
+      {
+        nmsg += msg[x];
+        if (x + 1 < len)
+        {
+          if (msg[x] == msg[x + 1])
+            nmsg += 'X';
+          nmsg += msg[x + 1];
+        }
+      }
+      msg = nmsg;
+    }
+    if (msg.length() & 1)
+      msg += 'X';
+  }
+  void createEncoder(string key, bool m)
+  { // creation of the key table
+    if (key.length() < 1)
+      key = "KEYWORD";
+    key += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    string s = "";
+    for (string::iterator it = key.begin(); it != key.end(); it++)
+    {
+      *it = toupper(*it);
+      if (*it < 65 || *it > 90)
+        continue;
+      if ((*it == 'J' && m) || (*it == 'Q' && !m))
+        continue;
+      if (s.find(*it) == -1)
+        s += *it;
+    }
+    copy(s.begin(), s.end(), &n[0][0]);
+  }
+};
+int main(int argc, char *argv[])
 {
-  char ps, ks, keyT[5][5];
-
-  // Key
-  ks = strlen(key);
-  ks = removeSpaces(key, ks);
-  toLowerCase(key, ks);
-
-  // Plaintext
-  ps = strlen(str);
-  toLowerCase(str, ps);
-  ps = removeSpaces(str, ps);
-
-  ps = prepare(str, ps);
-
-  generateKeyTable(key, ks, keyT);
-
-  encrypt(str, keyT, ps);
-}
-
-// Driver code
-int main()
-{
-  char str[SIZE], key[SIZE];
-
-  // Key to be encrypted
-  strcpy(key, "Monarchy");
-  cout << "Key text: " << key << "\n";
-
-  // Plaintext to be encrypted
-  strcpy(str, "instruments");
-  cout << "Plain text: " << str << "\n";
-
-  // encrypt using Playfair Cipher
-  encryptByPlayfairCipher(str, key);
-
-  cout << "Cipher text: " << str << "\n";
-
-  return 0;
+  string k, i, msg;
+  bool m, c;
+  cout << "Encrpty or Decypt? ";
+  getline(cin, i);
+  c = (i[0] == 'e' || i[0] == 'E');
+  cout << "Enter a key: ";
+  getline(cin, k);
+  cout << "I <-> J (Y/N): ";
+  getline(cin, i);
+  m = (i[0] == 'y' || i[0] == 'Y');
+  cout << "Enter the message: ";
+  getline(cin, msg);
+  playfair pf;
+  pf.play(k, msg, m, c);
+  return system("pause");
 }
