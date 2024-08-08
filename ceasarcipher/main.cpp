@@ -12,8 +12,11 @@ string encrypt(string plaintext, int key)
 		if (isupper(plaintext[i]))
 			result += char(int(plaintext[i] + key - 65) % 26 + 65);
 
-		else
+		else if (islower(plaintext[i]))
 			result += char(int(plaintext[i] + key - 97) % 26 + 97);
+
+		else
+			result += ' ';
 	}
 
 	return result;
@@ -28,8 +31,11 @@ string decrypt(string ciphertext, int key)
 		if (isupper(ciphertext[i]))
 			result += char(int(ciphertext[i] - key - 65) % 26 + 65);
 
-		else
+		else if (islower(ciphertext[i]))
 			result += char(int(ciphertext[i] - key - 97) % 26 + 97);
+
+		else
+			result += ' ';
 	}
 	return result;
 }
@@ -46,8 +52,9 @@ int main()
 	if (ch == 1)
 	{
 		string plaintext;
+		cin.ignore();
 		cout << "\nEnter the plain text :";
-		cin >> plaintext;
+		getline(cin, plaintext);
 		int key;
 		cout << "\nEnter the key :";
 		cin >> key;
@@ -58,8 +65,9 @@ int main()
 	else if (ch == 2)
 	{
 		string ciphertext;
+		cin.ignore();
 		cout << "\nEnter the cipher text :";
-		cin >> ciphertext;
+		getline(cin, ciphertext);
 		int key;
 		cout << "\nEnter the key :";
 		cin >> key;
