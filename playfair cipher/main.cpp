@@ -1,154 +1,175 @@
-#include <iostream>
-#include <string>
+#include <stdio.h>
+#include <conio.h>
+#include <string.h>
+#include <ctype.h>
+#define MX 5
 using namespace std;
-class playfair
+
+void playfair(char ch1, char ch2, char key[MX][MX])
 {
-public:
-  string msg;
-  char n[5][5];
-  void play(string k, string t, bool m, bool e)
+  int i, j, w, x, y, z;
+  FILE *out;
+  if ((out = fopen("cipher.txt", "a+")) == NULL)
   {
-    createEncoder(k, m);
-    getText(t, m, e);
-    if (e)
-      play(1);
-    else
-      play(-1);
-    print();
+    printf("file Currupted.");
   }
 
-private:
-  void play(int dir)
+  for (i = 0; i < MX; i++)
   {
-    int j, k, p, q;
-    string nmsg;
-    for (string::const_iterator it = msg.begin(); it != msg.end(); it++)
+    for (j = 0; j < MX; j++)
     {
-      if (getPos(*it++, j, k))
-        if (getPos(*it, p, q))
-        {
-          // for same row
-          if (j == p)
-          {
-            nmsg += getChar(j, k + dir);
-            nmsg += getChar(p, q + dir);
-          }
-          // for same column
-          else if (k == q)
-          {
-            nmsg += getChar(j + dir, k);
-            nmsg += getChar(p + dir, q);
-          }
-          else
-          {
-            nmsg += getChar(p, k);
-            nmsg += getChar(j, q);
-          }
-        }
-    }
-    msg = nmsg;
-  }
-  void print() // print the solution
-  {
-    cout << "\n\n Solution:" << endl;
-    string::iterator it = msg.begin();
-    int count = 0;
-    while (it != msg.end())
-    {
-      cout << *it;
-      it++;
-      cout << *it << " ";
-      it++;
-      if (++count >= 26)
-        cout << endl;
-      count = 0;
-    }
-    cout << endl
-         << endl;
-  }
-  char getChar(int a, int b)
-  { // get the characters
-    return n[(b + 5) % 5][(a + 5) % 5];
-  }
-  bool getPos(char l, int &c, int &d)
-  { // get the position
-    for (int y = 0; y < 5; y++)
-      for (int x = 0; x < 5; x++)
-        if (n[y][x] == l)
-        {
-          c = x;
-          d = y;
-          return true;
-        }
-    return false;
-  }
-  void getText(string t, bool m, bool e)
-  { // get the original message
-    for (string::iterator it = t.begin(); it != t.end(); it++)
-    {
-      // to choose J = I or no Q in the alphabet.
-      *it = toupper(*it);
-      if (*it < 65 || *it > 90)
-        continue;
-      if (*it == 'J' && m)
-        *it = 'I';
-      else if (*it == 'Q' && !m)
-        continue;
-      msg += *it;
-    }
-    if (e)
-    {
-      string nmsg = "";
-      size_t len = msg.length();
-      for (size_t x = 0; x < len; x += 2)
+      if (ch1 == key[i][j])
       {
-        nmsg += msg[x];
-        if (x + 1 < len)
-        {
-          if (msg[x] == msg[x + 1])
-            nmsg += 'X';
-          nmsg += msg[x + 1];
-        }
+        w = i;
+        x = j;
       }
-      msg = nmsg;
+      else if (ch2 == key[i][j])
+      {
+        y = i;
+        z = j;
+      }
     }
-    if (msg.length() & 1)
-      msg += 'X';
   }
-  void createEncoder(string key, bool m)
-  { // creation of the key table
-    if (key.length() < 1)
-      key = "KEYWORD";
-    key += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    string s = "";
-    for (string::iterator it = key.begin(); it != key.end(); it++)
-    {
-      *it = toupper(*it);
-      if (*it < 65 || *it > 90)
-        continue;
-      if ((*it == 'J' && m) || (*it == 'Q' && !m))
-        continue;
-      if (s.find(*it) == -1)
-        s += *it;
-    }
-    copy(s.begin(), s.end(), &n[0][0]);
+
+  if (w == y)
+  {
+
+    x = (x + 1) % 5;
+    z = (z + 1) % 5;
+
+    printf("%c%c", key[w][x], key[y][z]);
+    fprintf(out, "%c%c", key[w][x], key[y][z]);
   }
-};
-int main(int argc, char *argv[])
+  else if (x == z)
+  {
+
+    w = (w + 1) % 5;
+    y = (y + 1) % 5;
+
+    printf("%c%c", key[w][x], key[y][z]);
+    fprintf(out, "%c%c", key[w][x], key[y][z]);
+  }
+  else
+  {
+    printf("%c%c", key[w][z], key[y][x]);
+    fprintf(out, "%c%c", key[w][x], key[y][z]);
+  }
+  fclose(out);
+}
+
+void removeDuplicates(char str[])
 {
-  string k, i, msg;
-  bool m, c;
-  cout << "Encrpty or Decypt? ";
-  getline(cin, i);
-  c = (i[0] == 'e' || i[0] == 'E');
-  cout << "Enter a key: ";
-  getline(cin, k);
-  cout << "I <-> J (Y/N): ";
-  getline(cin, i);
-  m = (i[0] == 'y' || i[0] == 'Y');
-  cout << "Enter the message: ";
-  getline(cin, msg);
-  playfair pf;
-  pf.play(k, msg, m, c);
-  return system("pause");
+  int hash[256] = {0};
+  int currentIndex = 0;
+  int lastUniqueIndex = 0;
+  while (*(str + currentIndex))
+  {
+    char temp = *(str + currentIndex);
+    if (0 == hash[temp])
+    {
+      hash[temp] = 1;
+      *(str + lastUniqueIndex) = temp;
+      lastUniqueIndex++;
+    }
+    currentIndex++;
+  }
+  *(str + lastUniqueIndex) = '\0';
+}
+
+int main()
+{
+
+  int i, j, k = 0, l, m = 0, n;
+
+  char key[MX][MX], keyminus[25], keystr[10], str[25] = {0};
+
+  char alpa[26] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
+  printf("\nEnter key:");
+  gets(keystr);
+  printf("\nEnter the text:");
+  gets(str);
+  removeDuplicates(keystr);
+  n = strlen(keystr);
+
+  for (i = 0; i < n; i++)
+  {
+    if (keystr[i] == 'j')
+      keystr[i] = 'i';
+    else if (keystr[i] == 'J')
+      keystr[i] = 'I';
+    keystr[i] = toupper(keystr[i]);
+  }
+
+  for (i = 0; i < strlen(str); i++)
+  {
+    if (str[i] == 'j')
+      str[i] = 'i';
+    else if (str[i] == 'J')
+      str[i] = 'I';
+    str[i] = toupper(str[i]);
+  }
+
+  j = 0;
+
+  for (i = 0; i < 26; i++)
+  {
+    for (k = 0; k < n; k++)
+    {
+      if (keystr[k] == alpa[i])
+        break;
+      else if (alpa[i] == 'J')
+        break;
+    }
+    if (k == n)
+    {
+      keyminus[j] = alpa[i];
+      j++;
+    }
+  }
+
+  k = 0;
+
+  for (i = 0; i < MX; i++)
+  {
+    for (j = 0; j < MX; j++)
+    {
+      if (k < n)
+      {
+        key[i][j] = keystr[k];
+        k++;
+      }
+      else
+      {
+        key[i][j] = keyminus[m];
+        m++;
+      }
+      printf("%c ", key[i][j]);
+    }
+
+    printf("\n");
+  }
+
+  printf("\nEntered text :%s\nOutput Text :", str);
+
+  for (i = 0; i < strlen(str); i++)
+  {
+    if (str[i] == 'J')
+      str[i] = 'I';
+    if (str[i + 1] == '\0')
+      playfair(str[i], 'X', key);
+    else
+    {
+      if (str[i + 1] == 'J')
+        str[i + 1] = 'I';
+      if (str[i] == str[i + 1])
+        playfair(str[i], 'X', key);
+      else
+      {
+        playfair(str[i], str[i + 1], key);
+        i++;
+      }
+    }
+  }
+
+  return 0;
 }
