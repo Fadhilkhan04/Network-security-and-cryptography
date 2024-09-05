@@ -1,46 +1,163 @@
-#include <stdio.h>
-int extendedEuclidean(int a, int b, int *x, int *y)
-{
-  if (b == 0)
-  {
-    *x = 1;
-    *y = 0;
-    return a;
-  }
-  int x1, y1;
-  int gcd = extendedEuclidean(b, a % b, &x1, &y1);
-  *x = y1;
-  *y = x1 - (a / b) * y1;
-  return gcd;
-}
-int multiplicativeInverse(int a, int m)
-{
-  int x, y;
-  int gcd = extendedEuclidean(a, m, &x, &y);
+#include <iostream>
+using namespace std;
 
-  if (gcd != 1)
+string railCipherEncrypt(string text, int key)
+{
+
+  int l = text.length();
+  string result;
+
+  for (int i = 0; i < key; i++)
   {
-    printf("Multiplicative inverse doesn't exist.\n");
-    return -1;
+
+    int j;
+    if (i == 0)
+    {
+      j = 0;
+    }
+    else if (i == key - 1)
+    {
+      j = key - 1;
+    }
+    else
+    {
+      j = i;
+    }
+
+    int inv = 0;
+
+    while (j < l)
+    {
+
+      result.push_back(text[j]);
+
+      if (i == 0 || i == key - 1)
+      {
+        j += key + (key - 2);
+      }
+      else
+      {
+        if (inv == 0)
+        {
+          j += 2 * (key - (i + 1));
+          inv = 1;
+        }
+        else
+        {
+          j += 2 * i;
+          inv = 0;
+        }
+      }
+    }
   }
-  int inverse = (x % m + m) % m;
-  return inverse;
+
+  return result;
 }
+
+string railCipherDecrypt(string text, int key)
+{
+
+  int l = text.length();
+  string result(l, '*');
+
+  int iter = 0;
+
+  for (int i = 0; i < key; i++)
+  {
+
+    int j;
+    if (i == 0)
+    {
+      j = 0;
+    }
+    else if (i == key - 1)
+    {
+      j = key - 1;
+    }
+    else
+    {
+      j = i;
+    }
+
+    int inv = 0;
+
+    while (j < l)
+    {
+
+      result[j] = text[iter];
+      iter++;
+
+      if (i == 0 || i == key - 1)
+      {
+        j += key + (key - 2);
+      }
+      else
+      {
+        if (inv == 0)
+        {
+          j += 2 * (key - (i + 1));
+          inv = 1;
+        }
+        else
+        {
+          j += 2 * i;
+          inv = 0;
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
 int main()
 {
-  int a, b;
-  printf("Enter the first number: ");
-  scanf("%d", &a);
-  printf("Enter the second number: ");
-  scanf("%d", &b);
-  int x, y;
-  int gcd = extendedEuclidean(a, b, &x, &y);
-  printf("GCD of %d and %d is: %d\n", a, b, gcd);
-  printf("x: %d\n", x);
-  int modInverse = multiplicativeInverse(a, b);
-  if (modInverse != -1)
+
+  int choice;
+  int key;
+
+  cout << "\nEnter the key: ";
+  cin >> key;
+
+  while (1)
   {
-    printf("Multiplicative inverse of %d in gf(%d) is: %d\n", a, b, modInverse);
+    cout << "\n\n1. Encrypt" << endl;
+    cout << "2. Decrypt" << endl;
+    cout << "3. Exit" << endl;
+
+    cout << "Enter Choice: ";
+    cin >> choice;
+
+    string text;
+
+    if (choice == 1)
+    {
+      cout << "\nEnter plaintext: ";
+      std::getline(std::cin >> std::ws, text);
+      cout << railCipherEncrypt(text, key);
+    }
+    else if (choice == 2)
+    {
+      cout << "\nEnter cipher: ";
+      std::getline(std::cin >> std::ws, text);
+      cout << railCipherDecrypt(text, key);
+    }
+    else if (choice == 3)
+    {
+      cout << "Exiting.." << endl;
+      break;
+    }
+    else
+    {
+      cout << "Invalid Choice" << endl;
+    }
   }
+
   return 0;
 }
+
+/*
+TOP ROW: start = 0, increment = k + (k - 2)
+BOTTOM ROW: start = (k - 1), increment = k + (k - 2)
+OTHER ROWS: start = r, inc1 = 2*(k-(r+1)), inc2 = 2*r
+*/
