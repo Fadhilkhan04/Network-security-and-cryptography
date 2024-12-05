@@ -1,78 +1,104 @@
-#include <stdio.h>
-#include <string.h>
-void encryptMsg(char msg[], int key)
+#include <iostream>
+#include <string>
+using namespace std;
+
+string railCipherEncrypt(const string &text, int key)
 {
-  int msgLen = strlen(msg), i, j, k = -1, row = 0, col = 0;
-  char railMatrix[key][msgLen];
+  string result;
+  int len = text.length();
 
-  for (i = 0; i < key; ++i)
-    for (j = 0; j < msgLen; ++j)
-      railMatrix[i][j] = '\n';
-
-  for (i = 0; i < msgLen; ++i)
+  for (int i = 0; i < key; i++)
   {
-    railMatrix[row][col++] = msg[i];
-    if (row == 0 || row == key - 1)
-      k = k * (-1);
-    row = row + k;
+    int step1 = 2 * (key - i - 1);
+    int step2 = 2 * i;
+    int pos = i;
+    bool toggle = true;
+
+    while (pos < len)
+    {
+      result += text[pos];
+      if (step1 == 0 || step2 == 0)
+      {
+        pos += step1 + step2;
+      }
+      else
+      {
+        pos += toggle ? step1 : step2;
+        toggle = !toggle;
+      }
+    }
   }
 
-  printf("\nEncrypted Message: ");
-  for (i = 0; i < key; ++i)
-    for (j = 0; j < msgLen; ++j)
-      if (railMatrix[i][j] != '\n')
-        printf("%c", railMatrix[i][j]);
+  return result;
 }
-void decryptMsg(char enMsg[], int key)
+
+string railCipherDecrypt(const string &text, int key)
 {
-  int msgLen = strlen(enMsg), i, j, k = -1, row = 0, col = 0, m = 0;
-  char railMatrix[key][msgLen];
+  string result(text.length(), '*');
+  int len = text.length(), index = 0;
 
-  for (i = 0; i < key; ++i)
-    for (j = 0; j < msgLen; ++j)
-      railMatrix[i][j] = '\n';
-
-  for (i = 0; i < msgLen; ++i)
+  for (int i = 0; i < key; i++)
   {
-    railMatrix[row][col++] = '*';
-    if (row == 0 || row == key - 1)
-      k = k * (-1);
-    row = row + k;
+    int step1 = 2 * (key - i - 1);
+    int step2 = 2 * i;
+    int pos = i;
+    bool toggle = true;
+
+    while (pos < len)
+    {
+      result[pos] = text[index++];
+      if (step1 == 0 || step2 == 0)
+      {
+        pos += step1 + step2;
+      }
+      else
+      {
+        pos += toggle ? step1 : step2;
+        toggle = !toggle;
+      }
+    }
   }
 
-  for (i = 0; i < key; ++i)
-    for (j = 0; j < msgLen; ++j)
-      if (railMatrix[i][j] == '*')
-        railMatrix[i][j] = enMsg[m++];
-
-  row = col = 0;
-  k = -1;
-  printf("\nDecrypted Message: ");
-  for (i = 0; i < msgLen; ++i)
-  {
-    printf("%c", railMatrix[row][col++]);
-    if (row == 0 || row == key - 1)
-      k = k * (-1);
-    row = row + k;
-  }
+  return result;
 }
+
 int main()
 {
-  char msg[100];
-  char enMsg[100];
-  int key;
+  int choice, key;
 
-  printf("Enter message to be encrypted: ");
-  scanf("%s", msg);
-  printf("Enter the key: ");
-  scanf("%d", &key);
-  encryptMsg(msg, key);
+  cout << "Enter the key: ";
+  cin >> key;
 
-  printf("\nEnter message to be decrypted: ");
-  scanf("%s", enMsg);
-  printf("Enter the key: ");
-  scanf("%d", &key);
-  decryptMsg(enMsg, key);
+  while (true)
+  {
+    cout << "\n1. Encrypt\n2. Decrypt\n3. Exit\nEnter Choice: ";
+    cin >> choice;
+    cin.ignore(); // To handle newline characters
+
+    if (choice == 1)
+    {
+      string plaintext;
+      cout << "Enter plaintext: ";
+      getline(cin, plaintext);
+      cout << "Encrypted: " << railCipherEncrypt(plaintext, key) << endl;
+    }
+    else if (choice == 2)
+    {
+      string ciphertext;
+      cout << "Enter ciphertext: ";
+      getline(cin, ciphertext);
+      cout << "Decrypted: " << railCipherDecrypt(ciphertext, key) << endl;
+    }
+    else if (choice == 3)
+    {
+      cout << "Exiting..." << endl;
+      break;
+    }
+    else
+    {
+      cout << "Invalid choice. Please try again." << endl;
+    }
+  }
 
   return 0;
 }
