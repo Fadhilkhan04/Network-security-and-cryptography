@@ -71,7 +71,7 @@ void leftShift(string &key, int count)
 int main()
 {
 
-  string inputKey10 = "1010001010";
+  string inputKey10 = "0000011111";
 
   inputKey10 = applyPermutation(inputKey10, P10, 10);
 
